@@ -10,7 +10,11 @@ const router = express.Router();
 router.use(cors());
 router.use(express.json());
 
-// Test Vercel
+// Test Cycle
+router.get("/plaintest", async (req, res) => {
+  res.json({ message: "Hello, Plain Test!" });
+});
+
 router.get("/tests", async (req, res) => {
   const client = await connectClient();
   res.json({ message: "Hello, Test!" });
