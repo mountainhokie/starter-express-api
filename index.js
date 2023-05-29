@@ -1,7 +1,18 @@
-const express = require('express')
-const app = express()
-app.all('/', (req, res) => {
-    console.log("Just got a request!")
-    res.send('Yo!')
-})
-app.listen(process.env.PORT || 3000)
+const express = require("express");
+const cors = require("cors");
+const config = require("./config");
+const apiRouter = require("./api-router");
+
+const server = express();
+
+server.use(cors());
+server.use(express.json());
+server.use("/api", apiRouter);
+
+server.all("/", (req, res) => {
+  res.send("Yo, World!");
+});
+
+server.listen(config.PORT, () => {
+  console.log(`Server running on port ${config.PORT}`);
+});
