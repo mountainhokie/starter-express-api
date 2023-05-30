@@ -187,7 +187,7 @@ router.get("/collections", async (req, res) => {
     .collection("issues")
     .aggregate([
       { $unwind: "$collections" },
-      { $group: { _id: "$collections.value", count: { $sum: 1 } } },
+      { $group: { _id: "$collections.label", count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ])
     .toArray();
@@ -203,7 +203,7 @@ router.get("/collection-issues/:collectionName", async (req, res) => {
     .find({
       collections: {
         $elemMatch: {
-          value: req.params.collectionName,
+          label: req.params.collectionName,
         },
       },
     })
