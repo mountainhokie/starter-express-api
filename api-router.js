@@ -10,11 +10,7 @@ const router = express.Router();
 router.use(cors());
 router.use(express.json());
 
-// Test Cycle
-router.get("/plaintest", async (req, res) => {
-  res.json({ message: "Hello, Plain Test!" });
-});
-
+// Test Vercel
 router.get("/tests", async (req, res) => {
   const client = await connectClient();
   res.json({ message: "Hello, Test!" });
@@ -182,7 +178,6 @@ router.patch("/update-issue", async (req, res) => {
 router.get("/collections", async (req, res) => {
   // get the data from MongoDB
   const client = await connectClient();
-  //const collections = await client.collection("issues").distinct("collections");
   const collections = await client
     .collection("issues")
     .aggregate([
@@ -191,7 +186,7 @@ router.get("/collections", async (req, res) => {
       { $sort: { _id: 1 } },
     ])
     .toArray();
-
+  console.log(collections);
   res.send({ collections });
 });
 
@@ -218,6 +213,48 @@ router.get("/collection-issues/:collectionName", async (req, res) => {
     .sort({ "volume": 1 })
     .toArray();
   res.send({ issues });
+});
+
+// Get All Publishers
+router.get("/publishers", async (req, res) => {
+  // get the data from MongoDB
+  const client = await connectClient();
+  const publishers = await client
+    .collection("issues")
+    .aggregate([
+      { $unwind: "$publisher" },
+      { $group: { _id: "$publisher", count: { $sum: 1 } } },
+      { $sort: { _id: -1 } },
+    ])
+    .toArray();
+  res.send({ publishers });
+});
+
+// Get Comics that have the Horror label
+router.get("/horror", async (req, res) => {
+  // get the data from MongoDB
+  const client = await connectClient();
+  const collections = await client
+    .collection("issues")
+    //.find({ "collections.label": { $eq: "Horror" } })
+    .aggregate([
+      {
+        $facet: {
+          "categorizedByPublishers": [
+            { $match: { "collections.label": "Horror" } },
+            { $group: { _id: "$publisher", count: { $sum: 1 } } },
+            { $sort: { _id: -1 } },
+          ],
+          "totalNumIssues": [
+            {
+              $count: "total",
+            },
+          ],
+        },
+      },
+    ])
+    .toArray();
+  res.send({ collections });
 });
 
 module.exports = router;
